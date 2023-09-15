@@ -5,12 +5,10 @@ tags: ["ARO", "Azure"]
 authors:
   - Kevin Collins
   - Mohsen Houshmand Sarvestani
+  - Dustin Scott
 ---
-**Kevin Collins**
 
-*06/28/2022*
-
-Note:
+> **NOTE**:
 This guide demonstrates how to setup and configure self-managed OpenShift Data Foundation in Internal Mode on an ARO Cluster and test it out.
 
 ## Prerequisites
@@ -59,10 +57,10 @@ This guide demonstrates how to setup and configure self-managed OpenShift Data F
 
    ```bash
      while [[ $(oc get machinesets.machine.openshift.io -n openshift-machine-api | grep odf-worker-1 | awk '{ print $5 }') -ne 1 ]] 
-       do
-        echo "Waiting for worker machines to be ready..."
-        sleep 5
-       done
+     do
+       echo "Waiting for worker machines to be ready..."
+       sleep 5
+     done
    ```
 5. Label new compute nodes
 
@@ -85,9 +83,10 @@ This guide demonstrates how to setup and configure self-managed OpenShift Data F
      oc adm taint nodes $worker node.ocs.openshift.io/storage=true:NoSchedule
    done
    ```
-   Check nodes labels. The following command should list all three odf storage node
+   Check nodes labels. The following command should list all three ODF storage nodes, filtered by
+   the label we just applied:
    ```bash
-   oc get node --show-labels | grep storage | awk '{print $1}'
+   oc get node -l cluster.ocs.openshift.io/openshift-storage= --show-labels
    ```
 
 ## Deploy OpenShift Data Foundation
@@ -127,7 +126,7 @@ Next, we will install OpenShift Data Foundation via an Operator.
      name: ocs-operator
      namespace: openshift-storage
    spec:
-     channel: "stable-4.10"  # <-- Channel should be modified depending on the OCS version to be installed. Please ensure to maintain compatibility with OCP version
+     channel: stable-4.11  # <-- Channel should be modified depending on the OCS version to be installed. Please ensure to maintain compatibility with OCP version
      installPlanApproval: Automatic
      name: ocs-operator
      source: redhat-operators  # <-- Modify the name of the redhat-operators catalogsource if not default
@@ -143,14 +142,38 @@ Next, we will install OpenShift Data Foundation via an Operator.
      name: odf-operator
      namespace: openshift-storage
    spec:
-     channel: "stable-4.10" # <-- Channel should be modified depending on the OCS version to be installed. Please ensure to maintain compatibility with OCP version
+     channel: stable-4.11  # <-- Channel should be modified depending on the OCS version to be installed. Please ensure to maintain compatibility with OCP version
      installPlanApproval: Automatic
      name: odf-operator
      source: redhat-operators  # <-- Modify the name of the redhat-operators catalogsource if not default
      sourceNamespace: openshift-marketplace
    EOF
    ```
-5. Create a Storage Cluster
+5. Install the Console Plugin if needed.  This gives you a specific tile in the OpenShift console
+to manage your ODF Storage Cluster.  By running this command, you will see the OpenShift console
+refresh itself, as the console pods must restart to inherit this new configuration.  The console
+plugin is available via the `Storage` section in the dashboard:
+   ```bash
+   cat <<EOF | oc apply -f -
+   apiVersion: console.openshift.io/v1alpha1
+   kind: ConsolePlugin
+   metadata:
+     name: odf-console
+   spec:
+     displayName: ODF Plugin
+     service:
+       basePath: /
+       name: odf-console-service
+       namespace: openshift-storage
+       port: 9001
+   EOF
+   ```
+
+Here is an example of what ODF looks like in the console with a working cluster:
+
+![ODF Dashboard](images/odf-dashboard.png)
+
+6. Create a Storage Cluster
    ```bash
    cat <<EOF | oc apply -f -
    apiVersion: ocs.openshift.io/v1
@@ -159,7 +182,6 @@ Next, we will install OpenShift Data Foundation via an Operator.
      annotations:
        uninstall.ocs.openshift.io/cleanup-policy: delete
        uninstall.ocs.openshift.io/mode: graceful
-     generation: 2
      name: ocs-storagecluster
      namespace: openshift-storage
    spec:
@@ -173,12 +195,12 @@ Next, we will install OpenShift Data Foundation via an Operator.
            resources:
              requests:
                storage: 2Ti
-           storageClassName: managed-premium
+           storageClassName: managed-csi
            volumeMode: Block
        name: ocs-deviceset-managed-premium
        portable: true
        replica: 3
-     version: 4.10.0
+     version: 4.11.0
    EOF
    ```
 
@@ -191,10 +213,11 @@ Next, we will install OpenShift Data Foundation via an Operator.
 
    verify that the operators below have succeeded.
    ```
-   NAME                  DISPLAY                       VERSION   REPLACES   PHASE
-   mcg-operator.v4.10.4   NooBaa Operator               4.10.4                Succeeded
-   ocs-operator.v4.10.4   OpenShift Container Storage   4.10.4                Succeeded
-   odf-operator.v4.10.4   OpenShift Data Foundation     4.10.4                Succeeded
+   NAME                              DISPLAY                       VERSION   PHASE
+   mcg-operator.v4.11.9              NooBaa Operator               4.11.9    Succeeded
+   ocs-operator.v4.11.9              OpenShift Container Storage   4.11.9    Succeeded
+   odf-csi-addons-operator.v4.11.9   CSI Addons                    4.11.9    Succeeded
+   odf-operator.v4.11.9              OpenShift Data Foundation     4.11.9    Succeeded
    ```
 
 1. Check that Storage cluster is ready
@@ -214,10 +237,10 @@ Next, we will install OpenShift Data Foundation via an Operator.
    ```
    ```
    NAME                          PROVISIONER                             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-   managed-csi                   disk.csi.azure.com                      Delete          WaitForFirstConsumer   true                   118m
-   managed-premium (default)     kubernetes.io/azure-disk                Delete          WaitForFirstConsumer   true                   119m
-   ocs-storagecluster-ceph-rbd   openshift-storage.rbd.csi.ceph.com      Delete          Immediate              true                   7s
-   ocs-storagecluster-cephfs     openshift-storage.cephfs.csi.ceph.com   Delete          Immediate              true                   7s
+   azurefile-csi                 file.csi.azure.com                      Delete          Immediate              true                   175m
+   managed-csi (default)         disk.csi.azure.com                      Delete          WaitForFirstConsumer   true                   176m
+   ocs-storagecluster-ceph-rbd   openshift-storage.rbd.csi.ceph.com      Delete          Immediate              true                   15s
+   ocs-storagecluster-cephfs     openshift-storage.cephfs.csi.ceph.com   Delete          Immediate              true                   15s
    ```
 ## Test it out
    To test out ODF, we will create 'writer' pods on each node across all zones and then a reader pod to read the data that is written.  This will prove both regional storage along with "read write many" mode is working correctly.
@@ -280,7 +303,6 @@ Next, we will install OpenShift Data Foundation via an Operator.
              command: ["sh", "-c"]
              resources:
                limits:
-                 cpu: 1
                  memory: "1Gi"
              args:
                [
@@ -329,7 +351,6 @@ Next, we will install OpenShift Data Foundation via an Operator.
          command: ["/bin/bash", "-c", "--"]
          resources:
            limits:
-             cpu: 1
              memory: "1Gi"
          args: ["tail -f /mnt/odf-data/verify-odf"]
          volumeMounts:

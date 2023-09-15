@@ -15,8 +15,10 @@ skipMetadata: true
 
 ### ROSA
 
+* [Prerequisites Checklist to Deploy ROSA Cluster with STS](docs/rosa/prereq-list)
 * [Deploying ROSA in Private Link mode](/docs/rosa/private-link)
   * [Add Public Ingress to Private Link Cluster](/docs/rosa/private-link/public-ingress)
+* [Deploying ROSA PrivateLink Cluster with Ansible](/docs/rosa/ansible-rosa)
 * [Deploying ROSA in STS mode](/docs/rosa/sts)
 * [Deploying ROSA in STS mode with Private Link](/docs/rosa/sts-with-private-link)
 * [Deploying ROSA in STS mode with custom KMS Key](/docs/rosa/kms)
@@ -37,6 +39,8 @@ skipMetadata: true
 * [External DNS for ROSA Custom Domain](/docs/rosa/external-dns)
 * [Security Reference Architecture for ROSA](/docs/rosa/security-ra)
 * [Configure ROSA for Nvidia GPU Workloads](/docs/rosa/gpu)
+* [Connect to RDS from ROSA with STS](/docs/rosa/sts-rds)
+* [Create an AWS Client VPN connection for a private ROSA Cluster](/docs/rosa/vpn)
 
 ### ARO
 
@@ -65,6 +69,9 @@ skipMetadata: true
 * [Upgrade a disconnected ARO cluster](/docs/aro/upgrade-disconnected-aro)
 * [Using Azure Container Registry in Private ARO clusters](/docs/aro/aro-acr)
 * [Configure a Private ARO cluster with Azure File via a Private Endpoint](/docs/aro/private_endpoint)
+* [Use Azure Blob storage Container Storage Interface (CSI) driver on an ARO cluster](/docs/aro/blob-storage-csi)
+* [Configure ARO with Cross-Tenant Encryption Keys](/docs/aro/cross-tenant-encryption-keys)
+* [Deploying Private ARO clusters with Custom Domains](/docs/aro/custom-domain-private-cluster)
 
 ### GCP
 
@@ -145,4 +152,5 @@ skipMetadata: true
 
 * [Fix Cluster Logging Operator Addon for ROSA STS Clusters](/docs/rosa/sts-cluster-logging-addon)
 * [Stop default router from serving custom domain routes](/docs/ingress/default-router-custom-domain/README.md)
+* [Fix token-refresher pod CrashLoopBackOff when running a cluster behind a proxy](/docs/misc/token-refresher-proxy)
 
