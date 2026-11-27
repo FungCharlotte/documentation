@@ -127,13 +127,13 @@ It is required to create an IAM role and policy to give the cluster log forwarde
 ### Create the audit log forwarder
 
 ```bash
-cat > log-fwd-config.yaml << 'EOF'
+cat > log-fwd-config.yaml << EOF
 s3:
   s3_config_bucket_name: "${BUCKET_NAME}"
   s3_config_bucket_prefix: "${LOG_PREFIX}"
-groups:
-  - "api"
-  - "authentication"
+  groups:
+    - "api"
+    - "authentication"
 EOF
 
 rosa create log-forwarder -c ${CLUSTER_NAME} --log-fwd-config="log-fwd-config.yaml" -o yaml
