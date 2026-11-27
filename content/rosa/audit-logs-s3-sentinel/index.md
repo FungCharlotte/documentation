@@ -93,7 +93,7 @@ It is required to create an IAM role and policy to give the cluster log forwarde
 2. Configure the policy for the S3 bucket 
 
     ```bash
-    cat > s3-bucket-policy.json << 'EOF'
+    cat > s3-bucket-policy.json << EOF
     {
         "Version": "2012-10-17",
         "Statement": [
