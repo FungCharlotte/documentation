@@ -335,7 +335,7 @@ az role assignment create \
         "Id": "rosa-cplf-to-sentinel-sqs",
         "QueueArn": "arn:aws:sqs:${REGION}:${ACCOUNT_ID}:${SQS_QUEUE_NAME}",
         "Events": ["s3:ObjectCreated:*"],
-        "Filter": { "Key": { "FilterRules": [{ "Name": "prefix", "Value": "control-plane-logs/" }] } }
+        "Filter": { "Key": { "FilterRules": [{ "Name": "prefix", "Value": "${LOG_PREFIX}/" }] } }
     }]
     }
     EOF
