@@ -365,10 +365,10 @@ az role assignment create \
     def _get_token():
         if _token_cache["value"] and time.time() < _token_cache["expires_at"] - 60:
             return _token_cache["value"]
-        url = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
+        url = f"https://login.microsoftonline.com/{AAD_TENANT_ID}/oauth2/v2.0/token"
         body = urllib.parse.urlencode({
-            "client_id": APP_ID,
-            "client_secret": CLIENT_SECRET,
+            "client_id": AAD_CLIENT_ID,
+            "client_secret": AAD_CLIENT_SECRET,
             "scope": "https://monitor.azure.com/.default",
             "grant_type": "client_credentials",
         }).encode()
