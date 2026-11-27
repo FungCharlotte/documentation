@@ -496,6 +496,15 @@ az role assignment create \
     }"
     ```
 
+    Finally, wire the SQS queue up as a trigger for the Lambda. Without this step the function is never invoked -- messages will just accumulate in the queue indefinitely.
+
+    ```bash
+    aws lambda create-event-source-mapping \
+    --function-name <lambda-function-name> \
+    --event-source-arn arn:aws:sqs:${REGION}:${AWS_ACCOUNT_ID}:${SQS_QUEUE_NAME} \
+    --batch-size 5
+    ```
+
  ## Validate the Set-up
  In  your Log Analytics workspace, confirm data is flowing. Click on Logs menu in the left hand panel, then click on the Tables icon under New Query. Under Custom  Logs, select the custom table we created **ROSAControlPlaneAudit_CL**.You should see logs being shipped. You can also run custom queries to filter the logs. 
 
