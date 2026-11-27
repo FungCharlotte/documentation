@@ -316,7 +316,7 @@ az role assignment create \
 
     cat > sqs-attrs.json <<EOF
     {
-    "Policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowS3SendMessage\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"s3.amazonaws.com\"},\"Action\":\"SQS:SendMessage\",\"Resource\":\"arn:aws:sqs:${REGION}:${ACCOUNT_ID}:${SQS_QUEUE_NAME}\",\"Condition\":{\"ArnEquals\":{\"aws:SourceArn\":\"arn:aws:s3:::${BUCKET_NAME}\"}}}]}",
+    "Policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowS3SendMessage\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"s3.amazonaws.com\"},\"Action\":\"SQS:SendMessage\",\"Resource\":\"arn:aws:sqs:${REGION}:${AWS_ACCOUNT_ID}:${SQS_QUEUE_NAME}\",\"Condition\":{\"ArnEquals\":{\"aws:SourceArn\":\"arn:aws:s3:::${BUCKET_NAME}\"}}}]}",
     "VisibilityTimeout": "120"
     }
     EOF
@@ -333,7 +333,7 @@ az role assignment create \
     {
     "QueueConfigurations": [{
         "Id": "rosa-cplf-to-sentinel-sqs",
-        "QueueArn": "arn:aws:sqs:${REGION}:${ACCOUNT_ID}:${SQS_QUEUE_NAME}",
+        "QueueArn": "arn:aws:sqs:${REGION}:${AWS_ACCOUNT_ID}:${SQS_QUEUE_NAME}",
         "Events": ["s3:ObjectCreated:*"],
         "Filter": { "Key": { "FilterRules": [{ "Name": "prefix", "Value": "control-plane-logs/" }] } }
     }]
@@ -482,7 +482,7 @@ az role assignment create \
     --function-name <lambda-function-name> \
     --runtime python3.12 \
     --handler lambda_function.handler \
-    --role arn:aws:iam::${ACCOUNT_ID}:role/<lambda_role_name> \
+    --role arn:aws:iam::${AWS_ACCOUNT_ID}:role/<lambda-role-name> \
     --zip-file fileb://lambda.zip \
     --timeout 60 \
     --memory-size 256 \
